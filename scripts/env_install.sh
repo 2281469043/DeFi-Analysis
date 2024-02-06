@@ -3,6 +3,9 @@
 # Get user name
 user_name=$(whoami)
 
+conda init
+source ~/.bashrc
+
 pip install --upgrade pip --user
 
 conda create --name $user_name-py36 python=3.6
