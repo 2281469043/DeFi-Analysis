@@ -23,3 +23,34 @@ transaction = pyreadr.read_r('/data/IDEA_DeFi_Research/Data/Lending_Protocols/Aa
 df = transaction[None]
 # for test if the data is loaded
 df.head()
+
+# get information of data
+df.info()
+
+# checking for missing values in the data
+print(df.isnull().sum())
+
+# draw the corelation heatmap
+correlation_matrix = df.corr()
+plt.figure(figsize=(10, 8))
+sns.heatmap(correlation_matrix)
+plt.title("Correlation Heatmap for transactions.rds")
+plt.show()
+
+# draw the boxplot of data
+plt.figure(figsize=(10, 6))
+sns.boxplot(data=df, orient="v")
+plt.xticks(range(len(df.columns)), df.columns, rotation=90)
+plt.xlabel("Features")
+plt.ylabel("Value")
+plt.title("Boxplot of Features")
+plt.show()
+
+# draw the Histograms of Feature Distributions
+for feature_name in df.columns:
+    plt.figure(figsize=(6, 6))
+    sns.distplot(df[feature_name], kde=True)
+    plt.xlabel(feature_name)
+    plt.ylabel("Count")
+    plt.title("Histogram of {}".format(feature_name))
+    plt.show()
