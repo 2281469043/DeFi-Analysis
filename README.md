@@ -12,8 +12,8 @@ idea-node-07: https://lp01.idea.rpi.edu/hub07/
 If you have the permission to enter the server, just login in by your rcsid and the password.
 If you are not using the school Wifi, please connet the RPI vpn.
 -> 
-# Have the environment problem, please check the files in folder named scripts.
-# Using conda to create python 3.6 in the server
+If you have the environment problem, please check the files in folder named scripts.
+Using conda to create python 3.6 in the server
 ->
 Using python 3.6 to start coding please check any missing pip packages, such as pyreadr, pandas and etc.
 ->
