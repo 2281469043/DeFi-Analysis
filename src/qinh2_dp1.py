@@ -33,6 +33,8 @@ df.info()
 print(df.isnull().sum())
 
 # draw the corelation heatmap
+# DataFrame contains non-numeric data that cannot be converted to a float.
+df = df.select_dtypes(include='number') # drop non-numeric columns
 correlation_matrix = df.corr()
 plt.figure(figsize=(10, 8))
 sns.heatmap(correlation_matrix)
@@ -47,12 +49,3 @@ plt.xlabel("Features")
 plt.ylabel("Value")
 plt.title("Boxplot of Features")
 plt.show()
-
-# draw the Histograms of Feature Distributions
-for feature_name in df.columns:
-    plt.figure(figsize=(6, 6))
-    sns.distplot(df[feature_name], kde=True)
-    plt.xlabel(feature_name)
-    plt.ylabel("Count")
-    plt.title("Histogram of {}".format(feature_name))
-    plt.show()
