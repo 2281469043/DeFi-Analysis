@@ -95,3 +95,15 @@ borrow_type.head()
 # convert datetime to date
 borrow_type["date"] = borrow_type["timestamp"].dt.date
 borrow_type.head()
+
+# drop timestamp
+borrow_type = borrow_type.drop(columns=["timestamp"])
+borrow_type.head()
+
+# Plot the number of borrow transactions through time
+plt.plot(borrow_type["date"].value_counts().sort_index())
+# Format x-axis to display dates in "YYYY-MM-DD" format
+plt.gca().xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y-%m-%d'))
+plt.xticks(rotation=45)  # rotate x-axis labels for better readability
+plt.grid(True)
+plt.show()
