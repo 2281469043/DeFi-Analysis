@@ -54,3 +54,44 @@ It calculates the total amount for each date.
 By default, when you perform operations like groupby and sum, the resulting DataFrame will have a hierarchical index.
 The .reset_index() method is used to convert this hierarchical index into a simple DataFrame with a default integer index.
 '''
+
+# plot the line graph
+plt.plot(grouped_df['DateTime'].values, grouped_df['amount'].values)
+plt.title("total amount in transactions (curve graph)")
+plt.xlabel("Date")
+plt.ylabel("Total Amount")
+# Format x-axis to display dates in "YYYY-MM-DD" format
+plt.gca().xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y-%m-%d'))
+plt.xticks(rotation=45)  # rotate x-axis labels for better readability
+plt.grid(True)
+plt.show()
+
+# Plot the scatter plot
+plt.scatter(grouped_df['DateTime'], grouped_df['amount'])
+plt.title("total amount in transactions (scatter plot)")
+plt.xlabel("Date")
+plt.ylabel("Total Amount")
+# Format x-axis to display dates in "YYYY-MM-DD" format
+plt.gca().xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y-%m-%d'))
+plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
+plt.grid(True)
+plt.show()
+
+# Plot the bar graph depending on the type of transaction
+data_type = df_pandas["type"]
+data_type.value_counts().plot(kind='bar')
+
+# get all borrow type transactions
+borrow_type = df_pandas[df_pandas["type"] == "borrow"]
+
+# only keep id and timestamp
+borrow_type = borrow_type[["id", "timestamp"]]
+borrow_type.info()
+
+# convert timestamp to datetime, with unit days
+borrow_type["timestamp"] = pd.to_datetime(borrow_type["timestamp"], unit='s')
+borrow_type.head()
+
+# convert datetime to date
+borrow_type["date"] = borrow_type["timestamp"].dt.date
+borrow_type.head()
