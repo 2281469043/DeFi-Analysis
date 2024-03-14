@@ -44,3 +44,32 @@ def data_split(data_set):
         X_train, X_test = X.iloc[train_index, :], X.iloc[test_index,:]
         y_train, y_test = y.iloc[train_index], y.iloc[test_index]
     return [X_train, X_test, y_train, y_test]
+
+# linear_regression_model takes in the 4 dataframes from data_split and returns a list of predictions and the literal y_test values #
+def linear_regression_model(X_train, X_test, y_train, y_test):
+    from sklearn.linear_model import LinearRegression
+    # We fit a linear model with the train data, where X_train is our feature matrix and y_train is our target variable
+    # using LinearRegression to classify the data
+    estimator = LinearRegression()
+    fit = estimator.fit(X_train, y_train)
+    # We compute the predictions for the X_test features:
+    predictions = fit.predict(X_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - y_test) / len(y_test)
+    # This for-loop is super ugly and represents my inexperience with Python. All it is intended to do is get
+    # the literal y_test values without the associated datetimes, for plotting purposes.
+    y_test_vals = list()
+    for i in y_test:
+        y_test_vals.append(i)
+    return predictions, y_test_vals
+
+# plot_ground_truth takes in the predictions and the literal y_test values #
+def plot_ground_truth(predictions, y_test_vals):
+    # We plot the ground-truth values in blue and the predicted values in red:
+    plt.plot(y_test_vals, color = "blue")
+    plt.plot(predictions, color = "red")
+    
+# plot_difference takes in the predictions and the literal y_test values #
+def plot_difference(predictions, y_test_vals):
+    # We plot the difference between our model's predictions and the actual values:
+    plt.plot(y_test_vals - predictions)
