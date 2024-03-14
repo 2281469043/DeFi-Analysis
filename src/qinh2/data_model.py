@@ -73,3 +73,43 @@ def plot_ground_truth(predictions, y_test_vals):
 def plot_difference(predictions, y_test_vals):
     # We plot the difference between our model's predictions and the actual values:
     plt.plot(y_test_vals - predictions)
+
+def k_neighbors_classifier(X_train, X_test, y_train, y_test):
+    from sklearn.linear_model import KNeighborsClassifier
+    # using KNN to classify the data
+    estimator = KNeighborsClassifier(n_neighbors=3)
+    fit = estimator.fit(X_train, y_train)
+    predictions = fit.predict(X_test)
+    np.linalg.norm(predictions - y_test) / len(y_test)
+    y_test_vals = list()
+    for i in y_test:
+        y_test_vals.append(i)
+    # evaluate the KNN model
+    # method1: compare the real result and predict result
+    y_predict = estimator.predict(X_test)
+    print("y_predict:\n", y_predict)
+    print("compare real result and predict result:\n", y_test == y_predict)
+    
+    # method2: calculate the accuracy
+    accuracy = estimator.score(X_test, y_test)
+    print("accuracy: {0:.2f}\n".format(accuracy * 100))
+    return predictions, y_test_vals
+    
+# We call the functions we defined above here:
+'''
+train_set[0] = X_train
+train_set[1] = X_test
+train_set[2] = y_train
+train_set[3] = y_test
+'''
+train_set = list()
+train_set = data_split(dailyTransactionCount) # store all 4 types of data inside
+# using the linear_regression_model to make prediction
+predictions, y_test_vals = linear_regression_model(train_set[0], train_set[1], train_set[2], train_set[3])
+plot_ground_truth(predictions, y_test_vals)
+plot_difference(predictions, y_test_vals)
+
+# using the k_neighbors_classifier to make prediction
+predictions, y_test_vals = k_neighbors_classifier(train_set[0], train_set[1], train_set[2], train_set[3])
+plot_ground_truth(predictions, y_test_vals)
+plot_difference(predictions, y_test_vals)
