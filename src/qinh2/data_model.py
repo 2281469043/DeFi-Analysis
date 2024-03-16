@@ -25,6 +25,7 @@ dailyMeanPrices = dailyMeanPrices[['priceUSD']]
 print(dailyMeanPrices)
 dailyTransactionCount = dailyTransactionCount.merge(dailyMeanPrices, left_index = True, right_index = True)
 print(dailyTransactionCount)
+
 def data_split1(data_set):
     from sklearn.model_selection import TimeSeriesSplit
     # We want to use the transactionCount to predict the next day's price. To do this, we "lead" the priceUSD
@@ -42,3 +43,51 @@ def data_split1(data_set):
         feature_train, feature_test = X.iloc[train_index, :], X.iloc[test_index,:]
         target_train, target_test = y.iloc[train_index], y.iloc[test_index]
     return [feature_train, feature_test, target_train, target_test]
+
+def data_split2(data_set):
+    from sklearn.model_selection import TimeSeriesSplit
+    # We want to use the transactionCount to predict the next day's price. To do this, we "lead" the priceUSD
+    # column so in a given row, the transaction count is aligned with the next day's price.
+    dailyTransactionCount['priceUSD_lead_1'] = dailyTransactionCount['priceUSD'].shift(-1)
+    # We need to drop NA values. One NA value is introduced through this "lead" on the last day in the dataset.
+    dailyTransactionCount.dropna(inplace=True)
+    # In practice, it is better to predict daily percent price changes rather than predicting literal prices, so we compute the daily
+    # percent change here by subtraction tomorrow's price from today's and dividing by today's price.
+    dailyTransactionCount['dailyPercentChange'] = (dailyTransactionCount['priceUSD_lead_1'] - dailyTransactionCount['priceUSD']) / dailyTransactionCount['priceUSD']
+    # We want to predict the direction of the daily percent change, so we create a new feature which is the sign of the daily percent change.
+    dailyTransactionCount['directionOfDailyChange'] = np.sign(dailyTransactionCount['dailyPercentChange'])
+    print(dailyTransactionCount)
+    tss = TimeSeriesSplit(n_splits = 3)
+    X = dailyTransactionCount.drop(labels=['priceUSD_lead_1', 'dailyPercentChange', 'directionOfDailyChange'],axis=1)
+    y = dailyTransactionCount['directionOfDailyChange']
+    for train_index, test_index in tss.split(dailyTransactionCount):
+        feature_train, feature_test = X.iloc[train_index, :], X.iloc[test_index,:]
+        target_train, target_test = y.iloc[train_index], y.iloc[test_index]
+    return [feature_train, feature_test, target_train, target_test]
+
+def linear_regression_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.linear_model import LinearRegression
+    from sklearn.metrics import classification_report
+    # We fit a linear model with the train data, where feature_train is our feature matrix and target_train is our target variable
+    # Using LinearRegression to classify the data
+    estimator = LinearRegression()
+    fit = estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = fit.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    # All it is intended to do is get
+    # the literal target_test values without the associated datetimes, for plotting purposes.
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # evaluate the linear regression model
+    # method1: compare the real result and predict result
+    target_predict = estimator.predict(feature_test)
+    print("target_predict:\n", target_predict)
+    print("compare real result and predict result:\n", target_test == target_predict)
+    
+    # method2: calculate the accuracy
+    accuracy = estimator.score(feature_test, target_test)
+    print("accuracy: {0:.2f}%\n".format(accuracy * 100))
+    return predictions, target_test_vals
