@@ -3,7 +3,7 @@ import pyreadr
 import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
-transaction = pyreadr.read_r("/data/IDEA_DeFi_Research/Data/Lending_Protocols/Aave/V2/Mainnet/transactions.rds")
+transaction = pyreadr.read_r("/Users/ryanlil86/Desktop/RPI/junior2/RCOS/Defi-Analysis/qhz_code_qinh2/local/transactions.rds")
 df = transaction[None]
 df['DateTime'] = df['timestamp'].transform(lambda x: datetime.fromtimestamp(x))
 df.head()
@@ -17,7 +17,7 @@ dailyTransactionCount = dailyTransactionCount[['id']]
 dailyTransactionCount.rename(columns={"id": "transactionCount"}, inplace = True)
 print(dailyTransactionCount)
 # We load the minutely Aave price data here:
-aavePrices = pandas.read_csv('/data/IDEA_DeFi_Research/Data/Coin_Prices/Minutely/aavePrices.csv')
+aavePrices = pandas.read_csv('/Users/ryanlil86/Desktop/RPI/junior2/RCOS/Defi-Analysis/qhz_code_qinh2/local/aavePrices2.csv')
 # And here, since we want to predict daily prices, we create a new features which is the mean daily price.
 aavePrices['DateTime'] = aavePrices['timestamp'].transform(lambda x: datetime.fromtimestamp(x))
 dailyMeanPrices = aavePrices.groupby([df['DateTime'].dt.date]).mean()
@@ -26,8 +26,7 @@ print(dailyMeanPrices)
 dailyTransactionCount = dailyTransactionCount.merge(dailyMeanPrices, left_index = True, right_index = True)
 print(dailyTransactionCount)
 
-# data_split takes in a dataset and returns a list of 4 dataframes: X_train, X_test, y_train, y_test #
-def data_split(data_set):
+def data_split1(data_set):
     from sklearn.model_selection import TimeSeriesSplit
     # We want to use the transactionCount to predict the next day's price. To do this, we "lead" the priceUSD
     # column so in a given row, the transaction count is aligned with the next day's price.
@@ -41,75 +40,122 @@ def data_split(data_set):
     X = data_set.drop(labels=['priceUSD_lead_1', 'dailyPercentChange'],axis=1)
     y = data_set['dailyPercentChange']
     for train_index, test_index in tss.split(data_set):
-        X_train, X_test = X.iloc[train_index, :], X.iloc[test_index,:]
-        y_train, y_test = y.iloc[train_index], y.iloc[test_index]
-    return [X_train, X_test, y_train, y_test]
+        feature_train, feature_test = X.iloc[train_index, :], X.iloc[test_index,:]
+        target_train, target_test = y.iloc[train_index], y.iloc[test_index]
+    return [feature_train, feature_test, target_train, target_test]
 
-# linear_regression_model takes in the 4 dataframes from data_split and returns a list of predictions and the literal y_test values #
-def linear_regression_model(X_train, X_test, y_train, y_test):
+def data_split2(data_set):
+    from sklearn.model_selection import TimeSeriesSplit
+    # We want to use the transactionCount to predict the next day's price. To do this, we "lead" the priceUSD
+    # column so in a given row, the transaction count is aligned with the next day's price.
+    dailyTransactionCount['priceUSD_lead_1'] = dailyTransactionCount['priceUSD'].shift(-1)
+    # We need to drop NA values. One NA value is introduced through this "lead" on the last day in the dataset.
+    dailyTransactionCount.dropna(inplace=True)
+    # In practice, it is better to predict daily percent price changes rather than predicting literal prices, so we compute the daily
+    # percent change here by subtraction tomorrow's price from today's and dividing by today's price.
+    dailyTransactionCount['dailyPercentChange'] = (dailyTransactionCount['priceUSD_lead_1'] - dailyTransactionCount['priceUSD']) / dailyTransactionCount['priceUSD']
+    # We want to predict the direction of the daily percent change, so we create a new feature which is the sign of the daily percent change.
+    dailyTransactionCount['directionOfDailyChange'] = np.sign(dailyTransactionCount['dailyPercentChange'])
+    print(dailyTransactionCount)
+    tss = TimeSeriesSplit(n_splits = 3)
+    X = dailyTransactionCount.drop(labels=['priceUSD_lead_1', 'dailyPercentChange', 'directionOfDailyChange'],axis=1)
+    y = dailyTransactionCount['directionOfDailyChange']
+    for train_index, test_index in tss.split(dailyTransactionCount):
+        feature_train, feature_test = X.iloc[train_index, :], X.iloc[test_index,:]
+        target_train, target_test = y.iloc[train_index], y.iloc[test_index]
+    return [feature_train, feature_test, target_train, target_test]
+
+def linear_regression_model(feature_train, feature_test, target_train, target_test):
     from sklearn.linear_model import LinearRegression
-    # We fit a linear model with the train data, where X_train is our feature matrix and y_train is our target variable
-    # using LinearRegression to classify the data
+    from sklearn.metrics import classification_report
+    # We fit a linear model with the train data, where feature_train is our feature matrix and target_train is our target variable
+    # Using LinearRegression to classify the data
     estimator = LinearRegression()
-    fit = estimator.fit(X_train, y_train)
-    # We compute the predictions for the X_test features:
-    predictions = fit.predict(X_test)
+    fit = estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = fit.predict(feature_test)
     # The line below just computes the average accuracy of our predictions:
-    np.linalg.norm(predictions - y_test) / len(y_test)
-    # This for-loop is super ugly and represents my inexperience with Python. All it is intended to do is get
-    # the literal y_test values without the associated datetimes, for plotting purposes.
-    y_test_vals = list()
-    for i in y_test:
-        y_test_vals.append(i)
-    return predictions, y_test_vals
-
-# plot_ground_truth takes in the predictions and the literal y_test values #
-def plot_ground_truth(predictions, y_test_vals):
-    # We plot the ground-truth values in blue and the predicted values in red:
-    plt.plot(y_test_vals, color = "blue")
-    plt.plot(predictions, color = "red")
-    
-# plot_difference takes in the predictions and the literal y_test values #
-def plot_difference(predictions, y_test_vals):
-    # We plot the difference between our model's predictions and the actual values:
-    plt.plot(y_test_vals - predictions)
-
-def k_neighbors_classifier(X_train, X_test, y_train, y_test):
-    from sklearn.linear_model import KNeighborsClassifier
-    # using KNN to classify the data
-    estimator = KNeighborsClassifier(n_neighbors=3)
-    fit = estimator.fit(X_train, y_train)
-    predictions = fit.predict(X_test)
-    np.linalg.norm(predictions - y_test) / len(y_test)
-    y_test_vals = list()
-    for i in y_test:
-        y_test_vals.append(i)
-    # evaluate the KNN model
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    # All it is intended to do is get
+    # the literal target_test values without the associated datetimes, for plotting purposes.
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # evaluate the linear regression model
     # method1: compare the real result and predict result
-    y_predict = estimator.predict(X_test)
-    print("y_predict:\n", y_predict)
-    print("compare real result and predict result:\n", y_test == y_predict)
+    target_predict = estimator.predict(feature_test)
+    print("target_predict:\n", target_predict)
+    print("compare real result and predict result:\n", target_test == target_predict)
     
     # method2: calculate the accuracy
-    accuracy = estimator.score(X_test, y_test)
-    print("accuracy: {0:.2f}\n".format(accuracy * 100))
-    return predictions, y_test_vals
-    
-# We call the functions we defined above here:
+    accuracy = estimator.score(feature_test, target_test)
+    print("accuracy: {0:.2f}%\n".format(accuracy * 100))
+    return predictions, target_test_vals
+
+def logistic_regression_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import classification_report
+    estimator = LogisticRegression(C = 1.0, penalty = "l2", solver = "liblinear", fit_intercept=True, max_iter=1000)
+    fit = estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = fit.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # model evaluation
+    target_predict = estimator.predict(feature_test)
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n", target_predict == target_test)
+    print("Accuracy:\n{0:.2f}%".format(estimator.score(feature_test, target_test) * 100))
+    # classification report for the logistic regression model
+    report = classification_report(target_test, target_predict, labels=[2, 4], target_names=["Up", "Down"], zero_division=1)
+    print(report)
+    return predictions, target_test_vals
+
+def plot_ground_truth(predictions, target_test_vals):
+    # We plot the ground-truth values in blue and the predicted values in red:
+    plt.plot(target_test_vals, color = "blue")
+    plt.plot(predictions, color = "red")
+
+def plot_difference(predictions, target_test_vals):
+    # We plot the difference between our model's predictions and the actual values:
+    plt.plot(target_test_vals - predictions)
+
 '''
-train_set[0] = X_train
-train_set[1] = X_test
-train_set[2] = y_train
-train_set[3] = y_test
+The linear_regression_model, when applied with data_split1(), yielded suboptimal predictive
+performance due to the presence of multiple target variables. Consequently, in order to
+enhance predictive accuracy, a logistic regression model will be employed with a new
+dataset, data_split2(). This subsequent analysis will primarily concentrate on
+forecasting the directional movement of prices, specifically focusing on predicting
+whether the price will increase or decrease in the subsequent trading day.
+'''
+
+# linear regression model
+'''
+train_set[0] = feature_train
+train_set[1] = feature_test
+train_set[2] = target_train
+train_set[3] = target_test
 '''
 train_set = list()
-train_set = data_split(dailyTransactionCount) # store all 4 types of data inside
+train_set = data_split1(dailyTransactionCount) # store all 4 types of data inside
 # using the linear_regression_model to make prediction
-predictions, y_test_vals = linear_regression_model(train_set[0], train_set[1], train_set[2], train_set[3])
-plot_ground_truth(predictions, y_test_vals)
-plot_difference(predictions, y_test_vals)
+predictions, target_test_vals = linear_regression_model(train_set[0], train_set[1], train_set[2], train_set[3])
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
 
-# using the k_neighbors_classifier to make prediction
-predictions, y_test_vals = k_neighbors_classifier(train_set[0], train_set[1], train_set[2], train_set[3])
-plot_ground_truth(predictions, y_test_vals)
-plot_difference(predictions, y_test_vals)
+# logistic regression model
+'''
+train_set[0] = feature_train
+train_set[1] = feature_test
+train_set[2] = target_train
+train_set[3] = target_test
+'''
+train_set = list()
+train_set = data_split2(dailyTransactionCount) # store all 4 types of data inside
+# using the linear_regression_model to make prediction
+predictions, target_test_vals = logistic_regression_model(train_set[0], train_set[1], train_set[2], train_set[3])
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
