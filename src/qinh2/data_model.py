@@ -3,7 +3,7 @@ import pyreadr
 import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
-transaction = pyreadr.read_r("/Users/ryanlil86/Desktop/RPI/junior2/RCOS/Defi-Analysis/qhz_code_qinh2/local/transactions.rds")
+transaction = pyreadr.read_r("/data/IDEA_DeFi_Research/Data/Lending_Protocols/Aave/V2/Mainnet/transactions.rds")
 df = transaction[None]
 df['DateTime'] = df['timestamp'].transform(lambda x: datetime.fromtimestamp(x))
 df.head()
@@ -17,7 +17,7 @@ dailyTransactionCount = dailyTransactionCount[['id']]
 dailyTransactionCount.rename(columns={"id": "transactionCount"}, inplace = True)
 print(dailyTransactionCount)
 # We load the minutely Aave price data here:
-aavePrices = pandas.read_csv('/Users/ryanlil86/Desktop/RPI/junior2/RCOS/Defi-Analysis/qhz_code_qinh2/local/aavePrices2.csv')
+aavePrices = pandas.read_csv('/data/IDEA_DeFi_Research/Data/Coin_Prices/Minutely/aavePrices.csv')
 # And here, since we want to predict daily prices, we create a new features which is the mean daily price.
 aavePrices['DateTime'] = aavePrices['timestamp'].transform(lambda x: datetime.fromtimestamp(x))
 dailyMeanPrices = aavePrices.groupby([df['DateTime'].dt.date]).mean()
@@ -216,3 +216,106 @@ def multinomialNB_model(feature_train, feature_test, target_train, target_test):
     print("Accuracy:\n{0:.2f}%".format(estimator.score(feature_test, target_test) * 100))
     return predictions, target_test_vals
 
+# MultinomialNB model
+'''
+train_set[0] = feature_train
+train_set[1] = feature_test
+train_set[2] = target_train
+train_set[3] = target_test
+'''
+train_set = list()
+train_set = data_split2(dailyTransactionCount) # store all 4 types of data inside
+# using the naive bayes classifier to make prediction
+predictions, target_test_vals = multinomialNB_model(train_set[0], train_set[1], train_set[2], train_set[3])
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+
+def decision_tree_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.tree import DecisionTreeClassifier
+    estimator = DecisionTreeClassifier(criterion="gini", splitter="best", max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None, random_state=None, max_leaf_nodes=None, min_impurity_decrease=0.0)
+    fit = estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = fit.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # model evaluation
+    target_predict = estimator.predict(feature_test)
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n", target_predict == target_test)
+    print("Accuracy:\n{0:.2f}%".format(estimator.score(feature_test, target_test) * 100))
+    return predictions, target_test_vals
+
+# Decision Tree model
+'''
+train_set[0] = feature_train
+train_set[1] = feature_test
+train_set[2] = target_train
+train_set[3] = target_test
+'''
+train_set = list()
+train_set = data_split2(dailyTransactionCount) # store all 4 types of data inside
+# using the decision tree classifier to make prediction
+predictions, target_test_vals = decision_tree_model(train_set[0], train_set[1], train_set[2], train_set[3])
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+
+def random_forest_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import GridSearchCV
+    estimator = RandomForestClassifier()
+    param_dict = {"n_estimators": [120,200,300,500,800,1200], "max_depth": [5,8,15,25,30]}
+    estimator = GridSearchCV(estimator, param_grid=param_dict, cv=3)
+    estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = estimator.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # model evaluation
+    target_predict = estimator.predict(feature_test)
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n", target_predict == target_test)
+    print("Accuracy:\n{0:.2f}%".format(estimator.score(feature_test, target_test) * 100))
+    return predictions, target_test_vals
+
+# Random Forest model
+'''
+train_set[0] = feature_train
+train_set[1] = feature_test
+train_set[2] = target_train
+train_set[3] = target_test
+'''
+train_set = list()
+train_set = data_split2(dailyTransactionCount) # store all 4 types of data inside
+# using the random forest classifier to make prediction
+predictions, target_test_vals = random_forest_model(train_set[0], train_set[1], train_set[2], train_set[3])
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+    
+'''
+The linear_regression_model, when applied with data_split1(), yielded suboptimal predictive performance due to the
+presence of multiple target variables. Consequently, in order to enhance predictive accuracy, a logistic
+regression model will be employed with a new dataset, data_split2(). This subsequent analysis will primarily
+concentrate on forecasting the directional movement of prices, specifically focusing on predicting whether the
+price will increase or decrease in the subsequent trading day.
+'''
+
+'''
+For predict the directionOfDailyChange:
+
+logistic regression: 62.5% (Best)
+
+k nearest neighbors: 56.18%
+(I try the standardization and gridsearch, but the result has lower possibility then only use k_neighbors=3)
+
+naive Bayes: 52.81%
+
+decision tree: 56.23%
+
+random forest: 56.23%
+'''
