@@ -103,3 +103,116 @@ def linear_regression_model(feature_train, feature_test, target_train, target_te
     accuracy = estimator.score(feature_test, target_test)
     print("accuracy: {0:.2f}%\n".format(accuracy * 100))
     return predictions, target_test_vals
+
+# linear regression model
+'''
+train_set[0] = feature_train
+train_set[1] = feature_test
+train_set[2] = target_train
+train_set[3] = target_test
+'''
+train_set = list()
+train_set = data_split1(dailyTransactionCount) # store all 4 types of data inside
+# using the linear_regression_model to make prediction
+predictions, target_test_vals = linear_regression_model(train_set[0], train_set[1], train_set[2], train_set[3])
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+
+def logistic_regression_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import classification_report
+    estimator = LogisticRegression(C = 1.0, penalty = "l2", solver = "liblinear", fit_intercept=True, max_iter=1000)
+    fit = estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = fit.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # model evaluation
+    target_predict = estimator.predict(feature_test)
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n", target_predict == target_test)
+    print("Accuracy:\n{0:.2f}%".format(estimator.score(feature_test, target_test) * 100))
+    # classification report for the logistic regression model
+    report = classification_report(target_test, target_predict, labels=[2, 4], target_names=["Up", "Down"], zero_division=1)
+    print(report)
+    return predictions, target_test_vals
+
+# logistic regression model
+'''
+train_set[0] = feature_train
+train_set[1] = feature_test
+train_set[2] = target_train
+train_set[3] = target_test
+'''
+train_set = list()
+train_set = data_split2(dailyTransactionCount) # store all 4 types of data inside
+# using the linear_regression_model to make prediction
+predictions, target_test_vals = logistic_regression_model(train_set[0], train_set[1], train_set[2], train_set[3])
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+
+def knn_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.preprocessing import StandardScaler
+    # transfer = StandardScaler()
+    # # train data standardization
+    # feature_train = transfer.fit_transform(feature_train)
+    # feature_test = transfer.transform(feature_test)
+    # estimator = KNeighborsClassifier(n_neighbors=3, weights="uniform", algorithm="auto", leaf_size=30, p=2, metric="minkowski", metric_params=None, n_jobs=None)
+    # # KNN model optimization
+    # estimator = KNeighborsClassifier()
+    # parameters_testcase = {"n_neighbors": [3, 5, 7, 9, 11, 13]} # 超参数
+    # estimator = GridSearchCV(estimator, parameters_testcase, cv=3) # 交叉验证
+    # estimator.fit(feature_train, target_train)
+    estimator = KNeighborsClassifier(n_neighbors=3)
+    estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = estimator.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # model evaluation
+    target_predict = estimator.predict(feature_test)
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n", target_predict == target_test)
+    print("Accuracy:\n{0:.2f}%".format(estimator.score(feature_test, target_test) * 100))
+    return predictions, target_test_vals
+
+# K_Nearest_Neighbors model
+'''
+train_set[0] = feature_train
+train_set[1] = feature_test
+train_set[2] = target_train
+train_set[3] = target_test
+'''
+train_set = list()
+train_set = data_split2(dailyTransactionCount) # store all 4 types of data inside
+# using the linear_regression_model to make prediction
+predictions, target_test_vals = knn_model(train_set[0], train_set[1], train_set[2], train_set[3])
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+    
+def multinomialNB_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.naive_bayes import MultinomialNB
+    estimator = MultinomialNB(alpha=1.0, fit_prior=True, class_prior=None)
+    fit = estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = fit.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # model evaluation
+    target_predict = estimator.predict(feature_test)
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n", target_predict == target_test)
+    print("Accuracy:\n{0:.2f}%".format(estimator.score(feature_test, target_test) * 100))
+    return predictions, target_test_vals
+
