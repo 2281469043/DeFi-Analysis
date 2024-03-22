@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import datetime
-transaction_rds = pyreadr.read_r('/Users/ryanlil86/Desktop/RPI/junior2/RCOS/Defi-Analysis/qhz_code_qinh2/local/transactions.rds')
+transaction_rds = pyreadr.read_r('/data/IDEA_DeFi_Research/Data/Lending_Protocols/Aave/V2/Mainnet/transactions.rds')
 df = transaction_rds[None]
 df.plot() # plot the data
 df_pandas = pd.DataFrame(df) # set to pandas data frame
