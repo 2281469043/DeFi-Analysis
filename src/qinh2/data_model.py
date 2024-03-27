@@ -3,7 +3,7 @@ import pyreadr
 import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
-transaction = pyreadr.read_r("/data/IDEA_DeFi_Research/Data/Lending_Protocols/Aave/V2/Mainnet/transactions.rds")
+transaction = pyreadr.read_r("/Users/ryanlil86/Desktop/RPI/junior2/RCOS/Defi-Analysis/qhz_code_qinh2/local/transactions.rds")
 df = transaction[None]
 df['DateTime'] = df['timestamp'].transform(lambda x: datetime.fromtimestamp(x))
 df.head()
@@ -17,7 +17,7 @@ dailyTransactionCount = dailyTransactionCount[['id']]
 dailyTransactionCount.rename(columns={"id": "transactionCount"}, inplace = True)
 print(dailyTransactionCount)
 # We load the minutely Aave price data here:
-aavePrices = pandas.read_csv('/data/IDEA_DeFi_Research/Data/Coin_Prices/Minutely/aavePrices.csv')
+aavePrices = pandas.read_csv('/Users/ryanlil86/Desktop/RPI/junior2/RCOS/Defi-Analysis/qhz_code_qinh2/local/aavePrices2.csv')
 # And here, since we want to predict daily prices, we create a new features which is the mean daily price.
 aavePrices['DateTime'] = aavePrices['timestamp'].transform(lambda x: datetime.fromtimestamp(x))
 dailyMeanPrices = aavePrices.groupby([df['DateTime'].dt.date]).mean()
@@ -76,7 +76,14 @@ def plot_ground_truth(predictions, target_test_vals):
 def plot_difference(predictions, target_test_vals):
     # We plot the difference between our model's predictions and the actual values:
     plt.plot(target_test_vals - predictions)
-
+    
+'''
+The linear_regression_model, when applied with data_split1(), yielded suboptimal predictive performance due to the
+presence of multiple target variables. Consequently, in order to enhance predictive accuracy, a logistic
+regression model will be employed with a new dataset, data_split2(). This subsequent analysis will primarily
+concentrate on forecasting the directional movement of prices, specifically focusing on predicting whether the
+price will increase or decrease in the subsequent trading day.
+'''
 def linear_regression_model(feature_train, feature_test, target_train, target_test):
     from sklearn.linear_model import LinearRegression
     from sklearn.metrics import classification_report
@@ -118,6 +125,21 @@ predictions, target_test_vals = linear_regression_model(train_set[0], train_set[
 plot_ground_truth(predictions, target_test_vals)
 plot_difference(predictions, target_test_vals)
 
+'''
+# Stage 1
+For predict the directionOfDailyChange:
+
+logistic regression: 62.5% (Best)
+
+k nearest neighbors: 56.18%
+(I try the standardization and gridsearch, but the result has lower possibility then only use k_neighbors=3)
+
+naive Bayes: 52.81%
+
+decision tree: 56.23%
+
+random forest: 56.23%
+'''
 def logistic_regression_model(feature_train, feature_test, target_train, target_test):
     from sklearn.linear_model import LogisticRegression
     from sklearn.metrics import classification_report
@@ -296,26 +318,7 @@ train_set = data_split2(dailyTransactionCount) # store all 4 types of data insid
 predictions, target_test_vals = random_forest_model(train_set[0], train_set[1], train_set[2], train_set[3])
 plot_ground_truth(predictions, target_test_vals)
 plot_difference(predictions, target_test_vals)
-    
-'''
-The linear_regression_model, when applied with data_split1(), yielded suboptimal predictive performance due to the
-presence of multiple target variables. Consequently, in order to enhance predictive accuracy, a logistic
-regression model will be employed with a new dataset, data_split2(). This subsequent analysis will primarily
-concentrate on forecasting the directional movement of prices, specifically focusing on predicting whether the
-price will increase or decrease in the subsequent trading day.
-'''
 
 '''
-For predict the directionOfDailyChange:
-
-logistic regression: 62.5% (Best)
-
-k nearest neighbors: 56.18%
-(I try the standardization and gridsearch, but the result has lower possibility then only use k_neighbors=3)
-
-naive Bayes: 52.81%
-
-decision tree: 56.23%
-
-random forest: 56.23%
+deposit, withdraw, borrow, repay, liquidation
 '''
