@@ -26,3 +26,27 @@ plt.plot(borrow_type["date"].value_counts().sort_index().rolling(window=7).mean(
 plt.xticks(rotation=15)
 plt.show()
 
+transactions_type = df["type"]
+transactions_type.value_counts().plot(kind='bar')
+
+# Get all borrow transactions
+borrow_transactions = df[df["type"] == "borrow"]
+
+# only keep id and timestamp
+borrow_transactions = borrow_transactions[["id", "timestamp"]]
+borrow_transactions.info()
+
+# convert timestamp to datetime, with unit days
+borrow_transactions["timestamp"] = pandas.to_datetime(borrow_transactions["timestamp"], unit='s')
+borrow_transactions.head()
+
+# convert datetime to date
+borrow_transactions["date"] = borrow_transactions["timestamp"].dt.date
+borrow_transactions.head()
+
+# drop timestamp
+borrow_transactions = borrow_transactions.drop(columns=["timestamp"])
+borrow_transactions.head()
+
+
+
