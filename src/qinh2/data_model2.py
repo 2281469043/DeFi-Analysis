@@ -1,3 +1,6 @@
+# Author: Hanzhen Qin
+# Server
+
 import pandas
 import pyreadr
 import numpy as np
@@ -16,10 +19,10 @@ dailyTransactionCount = df.groupby([df['DateTime'].dt.date]).count()
 
 # add borrow type to the dataframe
 borrows = df[df['type'] == "borrow"]
-dailyBorrowedAmountsUSD = borrows.groupby([borrows['DateTime'].dt.date]).sum()
-dailyBorrowedAmountsUSD['amountBorrowedUSD'] = dailyBorrowedAmountsUSD['amountUSD']
-dailyBorrowedAmountsUSD = dailyBorrowedAmountsUSD.filter(items = ['DateTime', 'amountBorrowedUSD'], axis = 'columns')
-print(dailyBorrowedAmountsUSD)
+dailyBorrowsAmountsUSD = borrows.groupby([borrows['DateTime'].dt.date]).sum()
+dailyBorrowsAmountsUSD['amountBorrowsUSD'] = dailyBorrowsAmountsUSD['amountUSD']
+dailyBorrowsAmountsUSD = dailyBorrowsAmountsUSD.filter(items = ['DateTime', 'amountBorrowsUSD'], axis = 'columns')
+print(dailyBorrowsAmountsUSD)
 
 # add deposit type to the dataframe
 deposits = df[df['type'] == "deposit"]
@@ -29,14 +32,14 @@ dailyDepositsAmountsUSD = dailyDepositsAmountsUSD.filter(items = ['DateTime', 'a
 print(dailyDepositsAmountsUSD)
 
 # add repay type to the dataframe
-repays = df[df['type'] == "deposit"]
+repays = df[df['type'] == "repay"]
 dailyRepaysAmountsUSD = repays.groupby([repays['DateTime'].dt.date]).sum()
 dailyRepaysAmountsUSD['amountRepaysUSD'] = dailyRepaysAmountsUSD['amountUSD']
 dailyRepaysAmountsUSD = dailyRepaysAmountsUSD.filter(items = ['DateTime', 'amountRepaysUSD'], axis = 'columns')
 print(dailyRepaysAmountsUSD)
 
 # add withdraw type to the dataframe
-withdraws = df[df['type'] == "deposit"]
+withdraws = df[df['type'] == "withdraw"]
 dailyWithdrawsAmountsUSD = withdraws.groupby([withdraws['DateTime'].dt.date]).sum()
 dailyWithdrawsAmountsUSD['amountWithdrawsUSD'] = dailyWithdrawsAmountsUSD['amountUSD']
 dailyWithdrawsAmountsUSD = dailyWithdrawsAmountsUSD.filter(items = ['DateTime', 'amountWithdrawsUSD'], axis = 'columns')
@@ -63,7 +66,7 @@ data into the **dailyTransactionCount**.
 '''
 # feature engineering, merge dailyTransactionCount, dailyMeanPrices, dailyBorrowedAmountsUSD
 dailyTransactionCount = dailyTransactionCount.merge(dailyMeanPrices, how = "left", on = "DateTime")
-dailyTransactionCount = dailyTransactionCount.merge(dailyBorrowedAmountsUSD, how = "left", on = "DateTime")
+dailyTransactionCount = dailyTransactionCount.merge(dailyBorrowsAmountsUSD, how = "left", on = "DateTime")
 dailyTransactionCount = dailyTransactionCount.merge(dailyDepositsAmountsUSD, how = "left", on = "DateTime")
 dailyTransactionCount = dailyTransactionCount.merge(dailyRepaysAmountsUSD, how = "left", on = "DateTime")
 dailyTransactionCount = dailyTransactionCount.merge(dailyWithdrawsAmountsUSD, how = "left", on = "DateTime")
