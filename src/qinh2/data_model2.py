@@ -176,3 +176,33 @@ predictions, target_test_vals = knn_model_gridSearchCV(feature_train, feature_te
 plot_ground_truth(predictions, target_test_vals)
 
 plot_difference(predictions, target_test_vals)
+
+# ----------------- naive bayes model ----------------- #
+def multinomialNB_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.naive_bayes import MultinomialNB
+    estimator = MultinomialNB(alpha=1.0, fit_prior=True, class_prior=None)
+    fit = estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = fit.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # model evaluation
+    target_predict = estimator.predict(feature_test)
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n", target_predict == target_test)
+    print("Accuracy:\n{0:.2f}%".format(estimator.score(feature_test, target_test) * 100))
+    # make record for the accuracy
+    machine_learning_model_record["naive_bayes"] = estimator.score(feature_test, target_test) * 100
+    return predictions, target_test_vals
+
+# naive bayes classifier
+feature_train, feature_test, target_train, target_test = data_split2(dailyTransactionCount)
+predictions, target_test_vals = multinomialNB_model(feature_train, feature_test, target_train, target_test)
+
+plot_ground_truth(predictions, target_test_vals)
+
+plot_difference(predictions, target_test_vals)
+
