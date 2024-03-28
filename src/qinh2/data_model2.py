@@ -206,3 +206,32 @@ plot_ground_truth(predictions, target_test_vals)
 
 plot_difference(predictions, target_test_vals)
 
+# ----------------- decision tree model ----------------- #
+def decision_tree_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.tree import DecisionTreeClassifier
+    estimator = DecisionTreeClassifier(criterion="gini", splitter="best", max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None, random_state=None, max_leaf_nodes=None, min_impurity_decrease=0.0)
+    fit = estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = fit.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # model evaluation
+    target_predict = estimator.predict(feature_test)
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n", target_predict == target_test)
+    print("Accuracy:\n{0:.2f}%".format(estimator.score(feature_test, target_test) * 100))
+    # make record for the accuracy
+    machine_learning_model_record["decision_tree"] = estimator.score(feature_test, target_test) * 100
+    return predictions, target_test_vals
+
+# decision tree model
+feature_train, feature_test, target_train, target_test = data_split2(dailyTransactionCount)
+predictions, target_test_vals = decision_tree_model(feature_train, feature_test, target_train, target_test)
+
+plot_ground_truth(predictions, target_test_vals)
+
+plot_difference(predictions, target_test_vals)
+
