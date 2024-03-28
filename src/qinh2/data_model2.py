@@ -13,12 +13,34 @@ df.head()
 # To do this, we group the data by the date portion of the DateTime object, 
 # and then simply count how many transactions are in each group
 dailyTransactionCount = df.groupby([df['DateTime'].dt.date]).count()
+
 # add borrow type to the dataframe
 borrows = df[df['type'] == "borrow"]
 dailyBorrowedAmountsUSD = borrows.groupby([borrows['DateTime'].dt.date]).sum()
 dailyBorrowedAmountsUSD['amountBorrowedUSD'] = dailyBorrowedAmountsUSD['amountUSD']
 dailyBorrowedAmountsUSD = dailyBorrowedAmountsUSD.filter(items = ['DateTime', 'amountBorrowedUSD'], axis = 'columns')
 print(dailyBorrowedAmountsUSD)
+
+# add deposit type to the dataframe
+deposits = df[df['type'] == "deposit"]
+dailyDepositsAmountsUSD = deposits.groupby([deposits['DateTime'].dt.date]).sum()
+dailyDepositsAmountsUSD['amountDepositsUSD'] = dailyDepositsAmountsUSD['amountUSD']
+dailyDepositsAmountsUSD = dailyDepositsAmountsUSD.filter(items = ['DateTime', 'amountDepositsUSD'], axis = 'columns')
+print(dailyDepositsAmountsUSD)
+
+# add repay type to the dataframe
+repays = df[df['type'] == "deposit"]
+dailyRepaysAmountsUSD = repays.groupby([repays['DateTime'].dt.date]).sum()
+dailyRepaysAmountsUSD['amountRepaysUSD'] = dailyRepaysAmountsUSD['amountUSD']
+dailyRepaysAmountsUSD = dailyRepaysAmountsUSD.filter(items = ['DateTime', 'amountRepaysUSD'], axis = 'columns')
+print(dailyRepaysAmountsUSD)
+
+# add withdraw type to the dataframe
+withdraws = df[df['type'] == "deposit"]
+dailyWithdrawsAmountsUSD = withdraws.groupby([withdraws['DateTime'].dt.date]).sum()
+dailyWithdrawsAmountsUSD['amountWithdrawsUSD'] = dailyWithdrawsAmountsUSD['amountUSD']
+dailyWithdrawsAmountsUSD = dailyWithdrawsAmountsUSD.filter(items = ['DateTime', 'amountWithdrawsUSD'], axis = 'columns')
+print(dailyWithdrawsAmountsUSD)
 
 dailyTransactionCount = dailyTransactionCount[['id']]
 dailyTransactionCount.rename(columns={"id": "transactionCount"}, inplace = True)
@@ -42,6 +64,9 @@ data into the **dailyTransactionCount**.
 # feature engineering, merge dailyTransactionCount, dailyMeanPrices, dailyBorrowedAmountsUSD
 dailyTransactionCount = dailyTransactionCount.merge(dailyMeanPrices, how = "left", on = "DateTime")
 dailyTransactionCount = dailyTransactionCount.merge(dailyBorrowedAmountsUSD, how = "left", on = "DateTime")
+dailyTransactionCount = dailyTransactionCount.merge(dailyDepositsAmountsUSD, how = "left", on = "DateTime")
+dailyTransactionCount = dailyTransactionCount.merge(dailyRepaysAmountsUSD, how = "left", on = "DateTime")
+dailyTransactionCount = dailyTransactionCount.merge(dailyWithdrawsAmountsUSD, how = "left", on = "DateTime")
 print(dailyTransactionCount)
 
 machine_learning_model_record = dict()
@@ -75,7 +100,7 @@ def plot_ground_truth(predictions, target_test_vals):
 def plot_difference(predictions, y_test_vals):
     # We plot the difference between our model's predictions and the actual values:
     plt.plot(y_test_vals - predictions)
-
+    
 # ----------------- Logistic Regression model ----------------- #
 def logistic_regression_model(feature_train, feature_test, target_train, target_test):
     from sklearn.linear_model import LogisticRegression
