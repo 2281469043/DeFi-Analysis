@@ -171,7 +171,7 @@ train_set[3] = target_test
 '''
 train_set = list()
 train_set = data_split2(dailyTransactionCount) # store all 4 types of data inside
-# using the linear_regression_model to make prediction
+# using the logistic_regression_model to make prediction
 predictions, target_test_vals = logistic_regression_model(train_set[0], train_set[1], train_set[2], train_set[3])
 plot_ground_truth(predictions, target_test_vals)
 plot_difference(predictions, target_test_vals)
@@ -215,7 +215,7 @@ train_set[3] = target_test
 '''
 train_set = list()
 train_set = data_split2(dailyTransactionCount) # store all 4 types of data inside
-# using the linear_regression_model to make prediction
+# using the k_nearest_neighbors model to make prediction
 predictions, target_test_vals = knn_model(train_set[0], train_set[1], train_set[2], train_set[3])
 plot_ground_truth(predictions, target_test_vals)
 plot_difference(predictions, target_test_vals)
@@ -318,7 +318,3 @@ train_set = data_split2(dailyTransactionCount) # store all 4 types of data insid
 predictions, target_test_vals = random_forest_model(train_set[0], train_set[1], train_set[2], train_set[3])
 plot_ground_truth(predictions, target_test_vals)
 plot_difference(predictions, target_test_vals)
-
-'''
-deposit, withdraw, borrow, repay, liquidation
-'''
