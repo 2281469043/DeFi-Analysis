@@ -108,3 +108,32 @@ predictions, target_test_vals = logistic_regression_model(feature_train, feature
 plot_ground_truth(predictions, target_test_vals)
 
 plot_difference(predictions, target_test_vals)
+
+# ----------------- KNN model ----------------- #
+def knn_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.neighbors import KNeighborsClassifier
+    estimator = KNeighborsClassifier(n_neighbors=3)
+    estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = estimator.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # model evaluation
+    target_predict = estimator.predict(feature_test)
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n", target_predict == target_test)
+    print("Accuracy:\n{0:.2f}%".format(estimator.score(feature_test, target_test) * 100))
+    # make record for the accuracy
+    machine_learning_model_record["knn"] = estimator.score(feature_test, target_test) * 100
+    return predictions, target_test_vals
+
+# knn_model run
+feature_train, feature_test, target_train, target_test = data_split2(dailyTransactionCount)
+predictions, target_test_vals = knn_model(feature_train, feature_test, target_train, target_test)
+
+plot_ground_truth(predictions, target_test_vals)
+
+plot_difference(predictions, target_test_vals)
