@@ -67,4 +67,12 @@ dailyMeanPrices = aavePrices.groupby([df['DateTime'].dt.date]).mean()
 dailyMeanPrices = dailyMeanPrices[['priceUSD']]
 print(dailyMeanPrices)
 
+from sklearn.linear_model import LinearRegression
+
+dailyTransactionCount = df.groupby([df['DateTime'].dt.date]).count()
+
+dailyTransactionCount = dailyTransactionCount[['id']]
+dailyTransactionCount.rename(columns={"id": "transactionCount"}, inplace = True)
+print(dailyTransactionCount)
+
 
