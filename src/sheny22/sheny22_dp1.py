@@ -59,5 +59,12 @@ borrow_transactions["date"].value_counts().describe()
 
 aavePrices = pd.read_csv('../../data/aavePrices.csv')
 
+df['DateTime'] = df['timestamp'].transform(lambda x: datetime.fromtimestamp(x))
+df.head()
+
+aavePrices['DateTime'] = aavePrices['timestamp'].transform(lambda x: datetime.fromtimestamp(x))
+dailyMeanPrices = aavePrices.groupby([df['DateTime'].dt.date]).mean()
+dailyMeanPrices = dailyMeanPrices[['priceUSD']]
+print(dailyMeanPrices)
 
 
