@@ -84,3 +84,36 @@ def data_split2(data_set):
         feature_train, feature_test = X.iloc[train_index, :], X.iloc[test_index,:]
         target_train, target_test = y.iloc[train_index], y.iloc[test_index]
     return [feature_train, feature_test, target_train, target_test]
+def plot_ground_truth(predictions, target_test_vals):
+    # We plot the ground-truth values in blue and the predicted values in red:
+    plt.plot(target_test_vals, color = "blue")
+    plt.plot(predictions, color = "red")
+
+def plot_difference(predictions, y_test_vals):
+    # We plot the difference between our model's predictions and the actual values:
+    plt.plot(y_test_vals - predictions)
+    
+# ----------------- Logistic Regression model ----------------- #
+def logistic_regression_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import classification_report
+    estimator = LogisticRegression(C = 1.0, penalty = "l2", solver = "liblinear", fit_intercept=True, max_iter=1000)
+    fit = estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = fit.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # model evaluation
+    target_predict = estimator.predict(feature_test)
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n", target_predict == target_test)
+    print("Accuracy:\n{0:.2f}%".format(estimator.score(feature_test, target_test) * 100))
+    # make record for the accuracy
+    machine_learning_model_record["logistic_regression"] = estimator.score(feature_test, target_test) * 100
+    # classification report for the logistic regression model
+    report = classification_report(target_test, target_predict, labels=[2, 4], target_names=["Up", "Down"], zero_division=1)
+    print(report)
+    return predictions, target_test_vals
