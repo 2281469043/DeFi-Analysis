@@ -47,3 +47,20 @@ borrow_transactions.head()
 # drop timestamp
 borrow_transactions = borrow_transactions.drop(columns=["timestamp"])
 borrow_transactions.head()
+
+# convert datetime to date
+borrow_transactions["date"] = borrow_transactions["timestamp"].dt.date
+borrow_transactions.head()
+
+# drop timestamp
+borrow_transactions = borrow_transactions.drop(columns=["timestamp"])
+borrow_transactions.head()
+
+# Plot the number of borrow transactions through time
+borrow_transactions["date"].value_counts().sort_index().plot()
+
+# Boxplot of the number of borrow transactions per day
+borrow_transactions["date"].value_counts().plot(kind='box')
+
+# get mean, median, min, max, std of the number of borrow transactions per day
+borrow_transactions["date"].value_counts().describe()
