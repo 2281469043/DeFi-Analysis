@@ -27,3 +27,22 @@ dailyDepositsAmountsUSD = deposits.groupby([deposits['DateTime'].dt.date]).sum()
 dailyDepositsAmountsUSD['amountDepositsUSD'] = dailyDepositsAmountsUSD['amountUSD']
 dailyDepositsAmountsUSD = dailyDepositsAmountsUSD.filter(items = ['DateTime', 'amountDepositsUSD'], axis = 'columns')
 print(dailyDepositsAmountsUSD)
+
+# add withdraw type to the dataframe
+withdraws = df[df['type'] == "withdraw"]
+dailyWithdrawsAmountsUSD = withdraws.groupby([withdraws['DateTime'].dt.date]).sum()
+dailyWithdrawsAmountsUSD['amountWithdrawsUSD'] = dailyWithdrawsAmountsUSD['amountUSD']
+dailyWithdrawsAmountsUSD = dailyWithdrawsAmountsUSD.filter(items = ['DateTime', 'amountWithdrawsUSD'], axis = 'columns')
+print(dailyWithdrawsAmountsUSD)
+
+dailyTransactionCount = dailyTransactionCount[['id']]
+dailyTransactionCount.rename(columns={"id": "transactionCount"}, inplace = True)
+print(dailyTransactionCount)
+
+# We load the minutely Aave price data here:
+aavePrices = pandas.read_csv('/data/IDEA_DeFi_Research/Data/Coin_Prices/Minutely/aavePrices.csv')
+# And here, since we want to predict daily prices, we create a new features which is the mean daily price.
+aavePrices['DateTime'] = aavePrices['timestamp'].transform(lambda x: datetime.fromtimestamp(x))
+dailyMeanPrices = aavePrices.groupby([df['DateTime'].dt.date]).mean()
+dailyMeanPrices = dailyMeanPrices[['priceUSD']]
+print(dailyMeanPrices)
