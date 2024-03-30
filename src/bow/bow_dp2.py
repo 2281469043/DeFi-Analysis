@@ -64,3 +64,21 @@ borrow_transactions["date"].value_counts().plot(kind='box')
 
 # get mean, median, min, max, std of the number of borrow transactions per day
 borrow_transactions["date"].value_counts().describe()
+
+aavePrices = pd.read_csv('../../data/aavePrices.csv')
+
+df['DateTime'] = df['timestamp'].transform(lambda x: datetime.fromtimestamp(x))
+df.head()
+
+aavePrices['DateTime'] = aavePrices['timestamp'].transform(lambda x: datetime.fromtimestamp(x))
+dailyMeanPrices = aavePrices.groupby([df['DateTime'].dt.date]).mean()
+dailyMeanPrices = dailyMeanPrices[['priceUSD']]
+print(dailyMeanPrices)
+
+from sklearn.linear_model import LinearRegression
+
+dailyTransactionCount = df.groupby([df['DateTime'].dt.date]).count()
+
+dailyTransactionCount = dailyTransactionCount[['id']]
+dailyTransactionCount.rename(columns={"id": "transactionCount"}, inplace = True)
+print(dailyTransactionCount)
