@@ -514,3 +514,61 @@ plot_difference(predictions, target_test_vals)
 # plot_ground_truth(predictions, target_test_vals)
 # plot_difference(predictions, target_test_vals)
 
+def random_forest_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import GridSearchCV
+    estimator = RandomForestClassifier()
+    param_dict = {"n_estimators": [120,200,300,500,800,1200], "max_depth": [5,8,15,25,30]}
+    estimator = GridSearchCV(estimator, param_grid=param_dict, cv=3)
+    estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = estimator.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # model evaluation
+    target_predict = estimator.predict(feature_test)
+    print("-------------------- random forest --------------------\n")
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n", target_predict == target_test)
+    accuracy = estimator.score(feature_test, target_test) * 100
+    print("Accuracy:\n{0:.2f}%".format(accuracy))
+    return predictions, target_test_vals, accuracy
+
+# decision tree run
+print("-------------------- data of v2 mainnet --------------------\n")
+dailyTransactionCount_v2_mainnet = transaction_v2_mainnet()
+print("-------------------- data of v3 fantom --------------------\n")
+dailyTransactionCount_v3_fantom = transaction_v3_fantom()
+# print("-------------------- data of v2 polygon --------------------\n")
+# dailyTransactionCount_v2_polygon = transaction_v2_polygon()
+
+# v2_mainnet
+feature_train, feature_test, target_train, target_test = data_split2(dailyTransactionCount_v2_mainnet)
+predictions, target_test_vals, accuracy = random_forest_model(feature_train, feature_test, target_train, target_test)
+# make record for the accuracy
+machine_learning_model_record["random_forest_v2_mainnet"] = accuracy
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+
+# v3_fantom
+feature_train, feature_test, target_train, target_test = data_split2(dailyTransactionCount_v3_fantom)
+predictions, target_test_vals, accuracy = random_forest_model(feature_train, feature_test, target_train, target_test)
+# make record for the accuracy
+machine_learning_model_record["random_forest_v3_fantom"] = accuracy
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+
+# # v2_polygon
+# feature_train, feature_test, target_train, target_test = data_split2(dailyTransactionCount_v2_polygon)
+# predictions, target_test_vals, accuracy = random_forest_model(feature_train, feature_test, target_train, target_test)
+# # make record for the accuracy
+# machine_learning_model_record["random_forest_v2_polygon"] = accuracy
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+
+# model accuracy record
+for i in machine_learning_model_record.keys():
+    print("The accuracy of model: {} is {:.2f}%\n".format(i, machine_learning_model_record.get(i)))
