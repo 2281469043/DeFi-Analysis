@@ -19,6 +19,12 @@ def transaction_v2_mainnet():
     # and then simply count how many transactions are in each group
     dailyTransactionCount = df.groupby([df['DateTime'].dt.date]).count()
     
+    # Add the liquidations type to the dataframe
+    liquidations = df[df['type'] == "liquidation"]
+    liquidations = liquidations.filter(items = ['DateTime', 'type', 'user', 'principalAmountUSD', 'collateralAmountUSD'], axis = 'columns')
+    liquidations = liquidations.groupby([liquidations['DateTime'].dt.date]).sum()
+    print(liquidations)
+    
     # add borrow type to the dataframe
     borrows = df[df['type'] == "borrow"]
     dailyBorrowsAmountsUSD = borrows.groupby([borrows['DateTime'].dt.date]).sum()
@@ -65,6 +71,7 @@ def transaction_v2_mainnet():
     dailyTransactionCount = dailyTransactionCount.merge(dailyDepositsAmountsUSD, how = "left", on = "DateTime")
     dailyTransactionCount = dailyTransactionCount.merge(dailyRepaysAmountsUSD, how = "left", on = "DateTime")
     dailyTransactionCount = dailyTransactionCount.merge(dailyWithdrawsAmountsUSD, how = "left", on = "DateTime")
+    dailyTransactionCount = dailyTransactionCount.merge(liquidations, how = "left", on = "DateTime")
     
     # replace all NaN data to 0
     dailyTransactionCount.fillna(0, inplace=True)
@@ -84,6 +91,12 @@ def transaction_v3_fantom():
     # and then simply count how many transactions are in each group
     dailyTransactionCount = df.groupby([df['DateTime'].dt.date]).count()
     
+    # Add the liquidations type to the dataframe
+    liquidations = df[df['type'] == "liquidation"]
+    liquidations = liquidations.filter(items = ['DateTime', 'type', 'user', 'principalAmountUSD', 'collateralAmountUSD'], axis = 'columns')
+    liquidations = liquidations.groupby([liquidations['DateTime'].dt.date]).sum()
+    print(liquidations)
+    
     # add borrow type to the dataframe
     borrows = df[df['type'] == "borrow"]
     dailyBorrowsAmountsUSD = borrows.groupby([borrows['DateTime'].dt.date]).sum()
@@ -130,6 +143,7 @@ def transaction_v3_fantom():
     dailyTransactionCount = dailyTransactionCount.merge(dailyDepositsAmountsUSD, how = "left", on = "DateTime")
     dailyTransactionCount = dailyTransactionCount.merge(dailyRepaysAmountsUSD, how = "left", on = "DateTime")
     dailyTransactionCount = dailyTransactionCount.merge(dailyWithdrawsAmountsUSD, how = "left", on = "DateTime")
+    dailyTransactionCount = dailyTransactionCount.merge(liquidations, how = "left", on = "DateTime")
     
     # replace all NaN data to 0
     dailyTransactionCount.fillna(0, inplace=True)
@@ -149,6 +163,12 @@ def transaction_v2_polygon():
     # and then simply count how many transactions are in each group
     dailyTransactionCount = df.groupby([df['DateTime'].dt.date]).count()
     
+    # Add the liquidations type to the dataframe
+    liquidations = df[df['type'] == "liquidation"]
+    liquidations = liquidations.filter(items = ['DateTime', 'type', 'user', 'principalAmountUSD', 'collateralAmountUSD'], axis = 'columns')
+    liquidations = liquidations.groupby([liquidations['DateTime'].dt.date]).sum()
+    print(liquidations)
+    
     # add borrow type to the dataframe
     borrows = df[df['type'] == "borrow"]
     dailyBorrowsAmountsUSD = borrows.groupby([borrows['DateTime'].dt.date]).sum()
@@ -195,6 +215,7 @@ def transaction_v2_polygon():
     dailyTransactionCount = dailyTransactionCount.merge(dailyDepositsAmountsUSD, how = "left", on = "DateTime")
     dailyTransactionCount = dailyTransactionCount.merge(dailyRepaysAmountsUSD, how = "left", on = "DateTime")
     dailyTransactionCount = dailyTransactionCount.merge(dailyWithdrawsAmountsUSD, how = "left", on = "DateTime")
+    dailyTransactionCount = dailyTransactionCount.merge(liquidations, how = "left", on = "DateTime")
     
     # replace all NaN data to 0
     dailyTransactionCount.fillna(0, inplace=True)
