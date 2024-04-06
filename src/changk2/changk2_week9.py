@@ -54,3 +54,25 @@ def transaction_v2_mainnet():
     dailyTransactionCount = dailyTransactionCount[['id']]
     dailyTransactionCount.rename(columns={"id": "transactionCount"}, inplace = True)
     print(dailyTransactionCount)
+
+    # We load the minutely Aave price data here:
+    aavePrices = pandas.read_csv('/data/IDEA_DeFi_Research/Data/Coin_Prices/Minutely/aavePrices.csv')
+    # And here, since we want to predict daily prices, we create a new features which is the mean daily price.
+    aavePrices['DateTime'] = aavePrices['timestamp'].transform(lambda x: datetime.fromtimestamp(x))
+    dailyMeanPrices = aavePrices.groupby([df['DateTime'].dt.date]).mean()
+    dailyMeanPrices = dailyMeanPrices[['priceUSD']]
+    print(dailyMeanPrices)
+    
+    # feature engineering, merge dailyTransactionCount, dailyMeanPrices, dailyBorrowedAmountsUSD
+    dailyTransactionCount = dailyTransactionCount.merge(dailyMeanPrices, how = "left", on = "DateTime")
+    dailyTransactionCount = dailyTransactionCount.merge(dailyBorrowsAmountsUSD, how = "left", on = "DateTime")
+    dailyTransactionCount = dailyTransactionCount.merge(dailyDepositsAmountsUSD, how = "left", on = "DateTime")
+    dailyTransactionCount = dailyTransactionCount.merge(dailyRepaysAmountsUSD, how = "left", on = "DateTime")
+    dailyTransactionCount = dailyTransactionCount.merge(dailyWithdrawsAmountsUSD, how = "left", on = "DateTime")
+    dailyTransactionCount = dailyTransactionCount.merge(liquidations, how = "left", on = "DateTime")
+    
+    # replace all NaN data to 0
+    dailyTransactionCount.fillna(0, inplace=True)
+    print(dailyTransactionCount)
+    
+    return dailyTransactionCount
