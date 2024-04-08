@@ -1,5 +1,3 @@
-# Author: Hanzhen Qin
-# Server
 
 import pandas
 import pyreadr
@@ -56,7 +54,7 @@ def transaction_v2_mainnet():
     dailyTransactionCount = dailyTransactionCount[['id']]
     dailyTransactionCount.rename(columns={"id": "transactionCount"}, inplace = True)
     print(dailyTransactionCount)
-    
+
     # We load the minutely Aave price data here:
     aavePrices = pandas.read_csv('/data/IDEA_DeFi_Research/Data/Coin_Prices/Minutely/aavePrices.csv')
     # And here, since we want to predict daily prices, we create a new features which is the mean daily price.
@@ -78,7 +76,6 @@ def transaction_v2_mainnet():
     print(dailyTransactionCount)
     
     return dailyTransactionCount
-
 def transaction_v3_fantom():
     transaction = pyreadr.read_r("/data/IDEA_DeFi_Research/Data/Lending_Protocols/Aave/V3/Fantom/transactions.rds")
     df = transaction[None]
@@ -129,7 +126,8 @@ def transaction_v3_fantom():
     dailyTransactionCount.rename(columns={"id": "transactionCount"}, inplace = True)
     print(dailyTransactionCount)
     
-    # We load the minutely Aave price data here:
+
+      # We load the minutely Aave price data here:
     aavePrices = pandas.read_csv('/data/IDEA_DeFi_Research/Data/Coin_Prices/Minutely/aavePrices.csv')
     # And here, since we want to predict daily prices, we create a new features which is the mean daily price.
     aavePrices['DateTime'] = aavePrices['timestamp'].transform(lambda x: datetime.fromtimestamp(x))
@@ -200,7 +198,7 @@ def transaction_v2_polygon():
     dailyTransactionCount = dailyTransactionCount[['id']]
     dailyTransactionCount.rename(columns={"id": "transactionCount"}, inplace = True)
     print(dailyTransactionCount)
-    
+
     # We load the minutely Aave price data here:
     aavePrices = pandas.read_csv('/data/IDEA_DeFi_Research/Data/Coin_Prices/Minutely/aavePrices.csv')
     # And here, since we want to predict daily prices, we create a new features which is the mean daily price.
