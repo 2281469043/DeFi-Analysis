@@ -38,4 +38,49 @@ def transaction_v2_mainnet():
         items=['DateTime', 'amountDepositsUSD'], axis='columns')
     print(dailyDepositsAmountsUSD)
 
-    
+    repays = df[df['type'] == "repay"]
+    dailyRepaysAmountsUSD = repays.groupby([repays['DateTime'].dt.date]).sum()
+    dailyRepaysAmountsUSD['amountRepaysUSD'] = dailyRepaysAmountsUSD['amountUSD']
+    dailyRepaysAmountsUSD = dailyRepaysAmountsUSD.filter(
+        items=['DateTime', 'amountRepaysUSD'], axis='columns')
+    print(dailyRepaysAmountsUSD)
+
+    withdraws = df[df['type'] == "withdraw"]
+    dailyWithdrawsAmountsUSD = withdraws.groupby(
+        [withdraws['DateTime'].dt.date]).sum()
+    dailyWithdrawsAmountsUSD['amountWithdrawsUSD'] = dailyWithdrawsAmountsUSD['amountUSD']
+    dailyWithdrawsAmountsUSD = dailyWithdrawsAmountsUSD.filter(
+        items=['DateTime', 'amountWithdrawsUSD'], axis='columns')
+    print(dailyWithdrawsAmountsUSD)
+
+    dailyTransactionCount = dailyTransactionCount[['id']]
+    dailyTransactionCount.rename(
+        columns={"id": "transactionCount"}, inplace=True)
+    print(dailyTransactionCount)
+
+    aavePrices = pandas.read_csv(
+        '/data/IDEA_DeFi_Research/Data/Coin_Prices/Minutely/aavePrices.csv')
+
+    aavePrices['DateTime'] = aavePrices['timestamp'].transform(
+        lambda x: datetime.fromtimestamp(x))
+    dailyMeanPrices = aavePrices.groupby([df['DateTime'].dt.date]).mean()
+    dailyMeanPrices = dailyMeanPrices[['priceUSD']]
+    print(dailyMeanPrices)
+
+    dailyTransactionCount = dailyTransactionCount.merge(
+        dailyMeanPrices, how="left", on="DateTime")
+    dailyTransactionCount = dailyTransactionCount.merge(
+        dailyBorrowsAmountsUSD, how="left", on="DateTime")
+    dailyTransactionCount = dailyTransactionCount.merge(
+        dailyDepositsAmountsUSD, how="left", on="DateTime")
+    dailyTransactionCount = dailyTransactionCount.merge(
+        dailyRepaysAmountsUSD, how="left", on="DateTime")
+    dailyTransactionCount = dailyTransactionCount.merge(
+        dailyWithdrawsAmountsUSD, how="left", on="DateTime")
+    dailyTransactionCount = dailyTransactionCount.merge(
+        liquidations, how="left", on="DateTime")
+
+    dailyTransactionCount.fillna(0, inplace=True)
+    print(dailyTransactionCount)
+
+    return dailyTransactionCount
