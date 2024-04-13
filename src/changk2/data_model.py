@@ -344,3 +344,38 @@ def random_forest_model(feature_train, feature_test, target_train, target_test):
     print("Accuracy:\n{0:.2f}%".format(accuracy))
     return predictions, target_test_vals, accuracy
 
+# decision tree run
+print("-------------------- data of v2 mainnet --------------------\n")
+dailyTransactionCount_v2_mainnet = transaction_v2_mainnet()
+print("-------------------- data of v3 fantom --------------------\n")
+dailyTransactionCount_v3_fantom = transaction_v3_fantom()
+# print("-------------------- data of v2 polygon --------------------\n")
+# dailyTransactionCount_v2_polygon = transaction_v2_polygon()
+
+# v2_mainnet
+feature_train, feature_test, target_train, target_test = data_split2(dailyTransactionCount_v2_mainnet)
+predictions, target_test_vals, accuracy = random_forest_model(feature_train, feature_test, target_train, target_test)
+# make record for the accuracy
+machine_learning_model_record["random_forest_v2_mainnet"] = accuracy
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+
+# v3_fantom
+feature_train, feature_test, target_train, target_test = data_split2(dailyTransactionCount_v3_fantom)
+predictions, target_test_vals, accuracy = random_forest_model(feature_train, feature_test, target_train, target_test)
+# make record for the accuracy
+machine_learning_model_record["random_forest_v3_fantom"] = accuracy
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+
+# # v2_polygon
+# feature_train, feature_test, target_train, target_test = data_split2(dailyTransactionCount_v2_polygon)
+# predictions, target_test_vals, accuracy = random_forest_model(feature_train, feature_test, target_train, target_test)
+# # make record for the accuracy
+# machine_learning_model_record["random_forest_v2_polygon"] = accuracy
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+
+# model accuracy record
+for i in machine_learning_model_record.keys():
+    print("The accuracy of model: {} is {:.2f}%\n".format(i, machine_learning_model_record.get(i)))
