@@ -319,3 +319,28 @@ decision tree: 56.23%
 
 random forest: 56.23%
 '''
+
+
+def random_forest_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import GridSearchCV
+    estimator = RandomForestClassifier()
+    param_dict = {"n_estimators": [120,200,300,500,800,1200], "max_depth": [5,8,15,25,30]}
+    estimator = GridSearchCV(estimator, param_grid=param_dict, cv=3)
+    estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = estimator.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # model evaluation
+    target_predict = estimator.predict(feature_test)
+    print("-------------------- random forest --------------------\n")
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n", target_predict == target_test)
+    accuracy = estimator.score(feature_test, target_test) * 100
+    print("Accuracy:\n{0:.2f}%".format(accuracy))
+    return predictions, target_test_vals, accuracy
+
