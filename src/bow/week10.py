@@ -126,4 +126,51 @@ def logistic_regression_model(feature_train, feature_test, target_train, target_
     return predictions, target_test_vals, accuracy
 
 
+def knn_model_gridSearchCV(feature_train, feature_test, target_train, target_test):
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.preprocessing import StandardScaler
+    transfer = StandardScaler()
+    feature_train = transfer.fit_transform(feature_train)
+    feature_test = transfer.transform(feature_test)
+    estimator = KNeighborsClassifier(n_neighbors=3, weights="uniform", algorithm="auto",
+                                     leaf_size=30, p=2, metric="minkowski", metric_params=None, n_jobs=None)
+    estimator = KNeighborsClassifier()
+    parameters_testcase = {"n_neighbors": [3, 5, 7, 9, 11, 13]}
+    estimator = GridSearchCV(estimator, parameters_testcase, cv=3)
+    estimator.fit(feature_train, target_train)
+    predictions = estimator.predict(feature_test)
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    target_predict = estimator.predict(feature_test)
+    print("-------------------- knn with gridSearchCV --------------------\n")
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n",
+          target_predict == target_test)
+    accuracy = estimator.score(feature_test, target_test) * 100
+    print("Accuracy:\n{0:.2f}%".format(accuracy))
+    return predictions, target_test_vals, accuracy
+
+
 machine_learning_model_record = dict()
+
+
+dailyTransactionCount_v3_Arbitrum = transaction_v3_Arbitrum()
+feature_train, feature_test, target_train, target_test = data_split(
+    dailyTransactionCount_v3_Arbitrum)
+predictions, target_test_vals, accuracy = logistic_regression_model(
+    feature_train, feature_test, target_train, target_test)
+machine_learning_model_record["logistic_regression"] = accuracy
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+
+dailyTransactionCount_v3_Arbitrum = transaction_v3_Arbitrum()
+feature_train, feature_test, target_train, target_test = data_split(
+    dailyTransactionCount_v3_Arbitrum)
+predictions, target_test_vals, accuracy = knn_model_gridSearchCV(
+    feature_train, feature_test, target_train, target_test)
+machine_learning_model_record["knn_gridSearch"] = accuracy
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
