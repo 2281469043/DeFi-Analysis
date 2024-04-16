@@ -173,3 +173,59 @@ predictions, target_test_vals, accuracy = knn_model_gridSearchCV(feature_train, 
 machine_learning_model_record["knn_gridSearch"] = accuracy
 plot_ground_truth(predictions, target_test_vals)
 plot_difference(predictions, target_test_vals)
+
+def multinomialNB_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.naive_bayes import MultinomialNB
+    estimator = MultinomialNB(alpha=1.0, fit_prior=True, class_prior=None)
+    fit = estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = fit.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # model evaluation
+    target_predict = estimator.predict(feature_test)
+    print("-------------------- naive bayes --------------------\n")
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n", target_predict == target_test)
+    accuracy = estimator.score(feature_test, target_test) * 100
+    print("Accuracy:\n{0:.2f}%".format(accuracy))
+    return predictions, target_test_vals, accuracy
+
+dailyTransactionCount_v3_Avalanche = transaction_v3_Avalanche()
+feature_train, feature_test, target_train, target_test = data_split(dailyTransactionCount_v3_Avalanche)
+predictions, target_test_vals, accuracy = multinomialNB_model(feature_train, feature_test, target_train, target_test)
+# make record for the accuracy
+machine_learning_model_record["naive_bayes"] = accuracy
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+
+def decision_tree_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.tree import DecisionTreeClassifier
+    estimator = DecisionTreeClassifier(criterion="gini", splitter="best", max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None, random_state=None, max_leaf_nodes=None, min_impurity_decrease=0.0)
+    fit = estimator.fit(feature_train, target_train)
+    # We compute the predictions for the feature_test features:
+    predictions = fit.predict(feature_test)
+    # The line below just computes the average accuracy of our predictions:
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    # model evaluation
+    target_predict = estimator.predict(feature_test)
+    print("-------------------- decision tree --------------------\n")
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n", target_predict == target_test)
+    accuracy = estimator.score(feature_test, target_test) * 100
+    print("Accuracy:\n{0:.2f}%".format(accuracy))
+    return predictions, target_test_vals, accuracy
+
+dailyTransactionCount_v3_Avalanche = transaction_v3_Avalanche()
+feature_train, feature_test, target_train, target_test = data_split(dailyTransactionCount_v3_Avalanche)
+predictions, target_test_vals, accuracy = decision_tree_model(feature_train, feature_test, target_train, target_test)
+# make record for the accuracy
+machine_learning_model_record["decision_tree"] = accuracy
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
