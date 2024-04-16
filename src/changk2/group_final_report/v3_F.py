@@ -75,3 +75,4 @@ def transaction_v3_Fantom():
     print(dailyTransactionCount)
     
     return dailyTransactionCount
+
