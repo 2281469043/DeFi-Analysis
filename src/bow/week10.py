@@ -76,3 +76,54 @@ def transaction_v3_Arbitrum():
     print(dailyTransactionCount)
 
     return dailyTransactionCount
+
+
+def data_split(data_set):
+    from sklearn.model_selection import TimeSeriesSplit
+    data_set['priceUSD_lead_1'] = data_set['priceUSD'].shift(-1)
+    data_set.dropna(inplace=True)
+    data_set['dailyPercentChange'] = (
+        data_set['priceUSD_lead_1'] - data_set['priceUSD']) / data_set['priceUSD']
+    data_set['directionOfDailyChange'] = np.sign(
+        data_set['dailyPercentChange'])
+    tss = TimeSeriesSplit(n_splits=3)
+    X = data_set.drop(
+        labels=['priceUSD_lead_1', 'dailyPercentChange', 'directionOfDailyChange'], axis=1)
+    y = data_set['directionOfDailyChange']
+    for train_index, test_index in tss.split(data_set):
+        feature_train, feature_test = X.iloc[train_index,
+                                             :], X.iloc[test_index, :]
+        target_train, target_test = y.iloc[train_index], y.iloc[test_index]
+    return [feature_train, feature_test, target_train, target_test]
+
+
+def plot_ground_truth(predictions, target_test_vals):
+    plt.plot(target_test_vals, color="lightblue")
+    plt.plot(predictions, color="lightpink")
+
+
+def plot_difference(predictions, y_test_vals):
+    plt.plot(y_test_vals - predictions)
+
+
+def logistic_regression_model(feature_train, feature_test, target_train, target_test):
+    from sklearn.linear_model import LogisticRegression
+    estimator = LogisticRegression(
+        C=1.0, penalty="l2", solver="liblinear", fit_intercept=True, max_iter=1000)
+    fit = estimator.fit(feature_train, target_train)
+    predictions = fit.predict(feature_test)
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    target_predict = estimator.predict(feature_test)
+    print("-------------------- logistic regression --------------------\n")
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n",
+          target_predict == target_test)
+    accuracy = estimator.score(feature_test, target_test) * 100
+    print("Accuracy:\n{0:.2f}%".format(accuracy))
+    return predictions, target_test_vals, accuracy
+
+
+machine_learning_model_record = dict()
