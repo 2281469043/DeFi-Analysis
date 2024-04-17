@@ -224,3 +224,51 @@ def decision_tree_model(feature_train, feature_test, target_train, target_test):
     accuracy = estimator.score(feature_test, target_test) * 100
     print("Accuracy:\n{0:.2f}%".format(accuracy))
     return predictions, target_test_vals, accuracy
+
+
+dailyTransactionCount_v3_Optimism = transaction_v3_Optimism()
+feature_train, feature_test, target_train, target_test = data_split(
+    dailyTransactionCount_v3_Optimism)
+predictions, target_test_vals, accuracy = decision_tree_model(
+    feature_train, feature_test, target_train, target_test)
+machine_learning_model_record["decision_tree"] = accuracy
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+
+
+def random_forest_model_gridSearchCV(feature_train, feature_test, target_train, target_test):
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import GridSearchCV
+    estimator = RandomForestClassifier()
+    param_dict = {"n_estimators": [
+        120, 200, 300, 500, 800, 1200], "max_depth": [5, 8, 15, 25, 30]}
+    estimator = GridSearchCV(estimator, param_grid=param_dict, cv=3)
+    estimator.fit(feature_train, target_train)
+    predictions = estimator.predict(feature_test)
+    np.linalg.norm(predictions - target_test) / len(target_test)
+    target_test_vals = list()
+    for data in target_test:
+        target_test_vals.append(data)
+    target_predict = estimator.predict(feature_test)
+    print("-------------------- random forest --------------------\n")
+    print("The target_predict is:\n", target_predict)
+    print("Compare predicted results with actual values:\n",
+          target_predict == target_test)
+    accuracy = estimator.score(feature_test, target_test) * 100
+    print("Accuracy:\n{0:.2f}%".format(accuracy))
+    return predictions, target_test_vals, accuracy
+
+
+dailyTransactionCount_v3_Optimism = transaction_v3_Optimism()
+feature_train, feature_test, target_train, target_test = data_split(
+    dailyTransactionCount_v3_Optimism)
+predictions, target_test_vals, accuracy = random_forest_model_gridSearchCV(
+    feature_train, feature_test, target_train, target_test)
+machine_learning_model_record["random_forest_gridSearchCV"] = accuracy
+plot_ground_truth(predictions, target_test_vals)
+plot_difference(predictions, target_test_vals)
+
+for i in machine_learning_model_record.keys():
+    print("-" * 60)
+    print("The accuracy of model: {} | {:.2f}%\n".format(
+        i, machine_learning_model_record.get(i)))
